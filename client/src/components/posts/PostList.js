@@ -1,0 +1,152 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+const PostList = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get('/api/posts');
+        setPosts(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Separate useEffect for authentication
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      setIsAuthenticated(!!localStorage.getItem('token'));
+    };
+
+    checkAuth();
+    
+    // Listen for auth changes
+    window.addEventListener('authChange', checkAuth);
+    
+    return () => {
+      window.removeEventListener('authChange', checkAuth);
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Hero Section */}
+      <div className="hero-section">
+        <div className="container">
+          <h1>💬 DevTalk Bloggers</h1>
+          <p className="lead">A developer-focused blogging platform where tech enthusiasts share insights, learn from others, and showcase their knowledge</p>
+          {isAuthenticated && (
+            <Link to="/create" className="btn btn-light btn-lg mt-3">
+              Create Your First Post
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <div className="mt-3">
+              <Link to="/register" className="btn btn-light btn-lg me-2">
+                Get Started
+              </Link>
+              <Link to="/login" className="btn btn-outline-light btn-lg">
+                Sign In
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Blog Posts Section */}
+      <div className="container mt-4 mb-5">
+        <h2 className="mb-4">Latest Blog Posts</h2>
+        {posts.length === 0 ? (
+          <div className="text-center py-5">
+            <h3>No posts yet</h3>
+            <p className="text-muted">Be the first to share your knowledge!</p>
+            {isAuthenticated && (
+              <Link to="/create" className="btn btn-primary mt-3">
+                Create Post
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="row">
+            {posts.map(post => (
+              <div className="col-md-6 col-lg-4 mb-4 fade-in" key={post._id}>
+                <div className="card h-100">
+                  {post.imageUrl && (
+                    <img 
+                      src={post.imageUrl} 
+                      className="card-img-top" 
+                      alt={post.title} 
+                      style={{ height: '200px', objectFit: 'cover' }}
+                    />
+                  )}
+                  {!post.imageUrl && (
+                    <div 
+                      className="card-img-top d-flex align-items-center justify-content-center"
+                      style={{ 
+                        height: '200px', 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        fontSize: '3rem'
+                      }}
+                    >
+                      📄
+                    </div>
+                  )}
+                  <div className="card-body d-flex flex-column">
+                    <h5 className="card-title">{post.title}</h5>
+                    {post.subtitle && (
+                      <h6 className="card-subtitle mb-2 text-muted">{post.subtitle}</h6>
+                    )}
+                    <p className="card-text flex-grow-1">
+                      {post.content.length > 150 
+                        ? `${post.content.substring(0, 150)}...` 
+                        : post.content}
+                    </p>
+                    <Link to={`/posts/${post._id}`} className="btn btn-primary mt-auto">
+                      Read More →
+                    </Link>
+                  </div>
+                  <div className="card-footer text-muted bg-white">
+                    <small>
+                      By <strong>{post.author ? post.author.username : 'Unknown'}</strong>
+                      {' • '}
+                      {new Date(post.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default PostList;
+

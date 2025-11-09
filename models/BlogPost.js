@@ -4,7 +4,11 @@ const BlogPostSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
   content: { type: String, required: true },
-  imageUrl: { type: String },
+  imageUrl: { type: String }, // Keep for backward compatibility
+  image: {
+    data: Buffer,
+    contentType: String
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 

@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -25,11 +24,6 @@ mongoose.connect(mongoUri || 'mongodb://localhost:27017/dev-blog')
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.error('MongoDB Connection Error:', err));
 
-const fs = require('fs');
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
-
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 
@@ -37,7 +31,6 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Developer Blogging API' });
 });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -9,7 +9,21 @@ const postRoutes = require('./routes/posts');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Configure CORS to allow Vercel frontend
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://dev-blog-front-end.vercel.app',
+    'https://dev-blog-front-end-elixir-ndoros-projects.vercel.app',
+    'https://dev-blog-front-end-git-main-elixir-ndoros-projects.vercel.app',
+    /\.vercel\.app$/  // Allow all Vercel preview deployments
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const isProd = process.env.NODE_ENV === 'production';
